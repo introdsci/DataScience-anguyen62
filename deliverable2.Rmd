@@ -1,0 +1,150 @@
+---
+title: "Model Planning and Building"
+author: "Andrew Nguyen"
+date: "December 2, 2019"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+editor_options:
+  chunk_output_type: console
+class: csci385
+---
+# Introduction
+In this deliverable, we will take our work from deliverable one into account, gather necessary data from other sources via web scraping, and attempt to make predictions and answer previously raised based off said data. 
+
+# Predictions to be Made
+Based on data from the first deliverable, there were several questions raised. One of the questions I will aim to answer via predictive model will be whether the overall rating and number of reviews of apps have some relation to the targeted age ratings (for instance, are "Teens" more critical of what they play?). Benefits of analyzing a model such as this would allow developers to better consider which age rating should be targeted and what sort of content their app should feature for better sales/usage.
+
+# Initial Steps
+To get a good initial process going, it would be nice to get everything we did from deliverable 1. An easy way to do this is loading the libraries (as usual) getting the pure code from the deliverable.
+```{r}
+#include function modularizes without needing the full package
+include <- function(library_name){
+  if( !(library_name %in% installed.packages()) )
+    install.packages(library_name) 
+  library(library_name, character.only=TRUE)
+}
+
+
+#Library inclusion
+invisible( include ("tidyverse") )
+invisible( include ("knitr") )
+invisible( include ("tidyr") )
+invisible( include ("rvest") )
+invisible( include ("BBmisc") )
+invisible( include ("caret") )
+
+#Take code from deliverable 1 as a source
+purl ("deliverable1.Rmd", output = "d1.r")
+source ("d1.r")
+```
+
+# Secondary Dataset
+For this deliverable, we are required to find a secondary dataset to supplement data from our first deliverable. For this, I looked online and found a couple of datasets that are sourced from scraping Google Play Store app data (https://www.kaggle.com/lava18/google-play-store-apps). 
+
+In particular, its author states that while Apple App Store's appendix-like structure allows for easy data mining, Google Play's focus on JSON-like paraphernalia and dynamic page load makes it more difficult to outright scrape. It distinguishes itself from the first dataset as there are not many datasets available for Play Store data, and deals exclusively with Android market analytics. Additionally, it features some unique and helpful variables compared to the first dataset, including total number of installs and number of reviews.
+
+# Loading, looking at, and cleaning the dataset
+Let us do what's said on the titular tin.
+```{r}
+google_play_data <- read.csv("googleplaystore.csv")
+
+glimpse(google_play_data)  #technical view
+head(google_play_data)  #actual preview
+```
+The Play Store dataset includes at least 10,000 observations and 13 variables, composed mainly of analytic factors including:
+
+1. **App**: name of the app.
+2. **Category**: category the app belongs to (distinctive from genre).
+3. **Rating**: Overall average rating of the game. 
+4. **Reviews**: Number of reviews given (at the moment of scraping).
+5. **Size**: Size of the app (usually in MB).
+6. **Installs**: Number of installs (at the moment of scraping)
+7. **Type**: Paid or free.
+8. **Price**: In USD.
+9. **Content.Rating**: Age group the app is targeted at.
+10. **Genres**: Genres the app belongs to.
+11. **Last.Updated**: Date the app store published its latest version (at the moment of scraping).
+12. **Current.Ver**: Current version number of the app (at the moment of scraping).
+13. **Android.Ver**: The minimum required Android version for use.
+
+The dataset is already pretty clean at the moment, so much of what we're doing here initially is merely aesthetic. Deeper cleanups occur later in the block.
+
+```{r}
+names(google_play_data)[9] <- "Content Rating"  #9 is the index of "Content.Rating" as listed above. Other renames will follow accordingly.
+names(google_play_data)[11] <- "Last Updated"
+names(google_play_data)[12] <- "Current Version"
+names(google_play_data)[13] <- "Required Android Version" #more descriptive
+
+#quick important variable factor checks
+is.factor(google_play_data$Category)
+is.factor(google_play_data$Installs)
+is.factor(google_play_data$`Last Updated`)
+
+```
+
+A quick scan of the document (via is.na()) tells us that data values are severely misaligned in row 10473. We take the simple option of removing it.
+```{r}
+google_play_data <- google_play_data[-10473,]
+```
+
+Installs variable is good but given in a format that can be potentially errorneous (+ character at the end of each integer). Substitution is the logical thing to do. Furthermore, a type check after that step indicates that it is a character class; we should make it numeric instead.
+```{r}
+google_play_data$Installs <- gsub("\\D", "", google_play_data$Installs)
+class(google_play_data$Installs)
+google_play_data$Installs <- as.numeric(as.character(google_play_data$Installs))
+```
+
+Several values in the Rating category and others also read as NaN, which makes data in the row pretty irrelevant. 
+```{r}
+google_play_data <- na.omit(google_play_data)
+```
+
+For ease of utility in plotting stages, the dollar sign notation is not needed in price (whenever an app is not free). An is.numeric() check on the variable also indicates that values in this column are in fact not numeric. A combination of substitution and establishing it as numeric should do.
+```{r}
+google_play_data$Price = as.numeric(gsub("[\\$,]", "", google_play_data$Price))
+```
+
+We are now left with a 9366 row database that's been relatively tidied. We should save the database for reference. A sample of it is shown.
+```{r}
+cleaned_google_play_data <- google_play_data
+head (cleaned_google_play_data)
+```
+
+# Modeling and Predicting
+
+As an initial step to linear regression, we can build split random sample sets of 75% (training) and 25% (testing). We will use sample.int as detailed here: https://www.rdocumentation.org/packages/base/versions/3.6.1/topics/sample
+
+Additionally, to visualize data, several plots of relevent variables are given.
+
+```{r}
+sample75 <- sample.int (
+  n = nrow(cleaned_google_play_data), 
+  size = .75*nrow(cleaned_google_play_data))
+
+testingset <- cleaned_google_play_data[-sample75,]  #testing 25% of the data
+
+trainingset <- cleaned_google_play_data[sample75,]  #testing 75% of the data
+
+ggplot(trainingset) + geom_bar(aes(x=Category)) + coord_flip(xlim = NULL, ylim = NULL, expand = TRUE, clip = "on")
+ggplot(trainingset) + geom_bar(aes(x=Rating)) + coord_flip(xlim = NULL, ylim = NULL, expand = TRUE, clip = "on")
+ggplot(trainingset) + geom_bar(aes(x=Type)) + coord_flip(xlim = NULL, ylim = NULL, expand = TRUE, clip = "on")
+```
+
+We can now do some true analysis. We will first make a model consisting of a hypothesized dependant (rating) with an independant variable (content rating).
+```{r}
+trainingmodel <- lm(Rating ~ factor(`Content Rating`), data = trainingset)
+summary (trainingmodel)
+predictions <- trainingmodel %>% predict(testingset)
+
+#plotting data
+ggplot(data = testingset, aes(x=predictions, y = Rating)) + 
+      geom_point() + 
+      geom_smooth(method = "lm")
+```
+
+# Model Conclusions and Limitations
+Looking at the model data, it's clear that there are some limitations to consider. For instance, the p-value is dependant on existing chosen values in the test and train tables; rerunning sample.int() would yield some differing values. As far as external/inherent values are concerned, human behavior may be a threat; for instance, people may only care to take the time to review/rate an app if they are extremely emotionally opinionated towards the app—which may also result in extremes such as 1 or 5. 
+
+An resulting indicator is the model / overall data showing an inclination towards apps with average ratings of 4.0+. Thus, although model makes some sense in this regard (younger users may not have sufficient critical capacity compared to older), it lacks a degree of true accuracy.

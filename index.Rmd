@@ -1,6 +1,6 @@
 ---
 title: " " #replace the title with something short and catchy to represent your project
-subtitle: "____'s Data Science Portfolio" #replace blank with your name
+subtitle: "Andrew Nguyen's Data Science Portfolio" #replace blank with your name
 output:
   html_document:
     df_print: paged
@@ -8,15 +8,15 @@ output:
 
 ## Abstract
 
-In under 250 words give a brief summary of the project so far.
+A cohesive analysis of Apple App Store game apps involving factors such as ratings, publication dates, prices, in-game purchases, and more. 
 
 ### 1. Discovery and Data Preparation
 
-Provide a one-sentence introduction with what is covered by the first deliverable along with a link to another html page that gives the details.
+The first deliverable covers the initial dataset this project is based on; it then tidies it up, splits it into smaller datasets, and performs several minor analyses via graphs. It can be found [here](deliverable1.html)
 
 ### 2. Model Planning and Building
 
-Coming soon...
+The second deliverable covers another dataset, tidies said dataset up, and attempts to make predictions of overall app ratings based on its age rating. It can be found [here](deliverable2.html)
 
 ### 3. Results and Operationalization
 
