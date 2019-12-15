@@ -20,5 +20,5 @@ The second deliverable covers another dataset, tidies said dataset up, and attem
 
 ### 3. Results and Operationalization
 
-Coming soon...
+The third deliverable addresses peer reviews and small issues found in previous attempts at the other deliverables, and summarizes what can be done with the resulting research (i.e. Operationalization). It can be found [here](deliverable3.html)
 

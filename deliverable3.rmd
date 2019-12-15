@@ -1,0 +1,79 @@
+---
+title: " Results and Operationalization"
+author: "Andrew Nguyen"
+date: "December 13, 2019"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+editor_options:
+  chunk_output_type: console
+class: csci385
+---
+```{r echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, results='hide'}
+#Library inclusion
+
+include <- function(library_name){
+  if( !(library_name %in% installed.packages()) )
+    install.packages(library_name) 
+  library(library_name, character.only=TRUE)
+}
+invisible( include ("tidyverse") )
+invisible( include ("knitr") )
+invisible( include ("tidyr") )
+invisible( include ("rvest") )
+invisible( include ("BBmisc") )
+invisible( include ("caret") )
+
+#Take code from deliverable 1 as a source
+suppressMessages(source ("d1.r"))
+
+#Take code from deliverable 2 as a source
+purl ("deliverable2.Rmd", output = "d2.r")
+suppressMessages(source ("d2.r"))
+```
+
+# Introduction
+In this deliverable, the goal is to refine things done in previous work and make concluding statements on the overall portfolio project, including operationalization, social impacts, and unintented consequences of the study. Much of my refinery changes are due to suggestions and peer reviews made by others; in particular, many thanks to [kippyan's review summary](https://github.com/anguyen62/anguyen62.github.io/issues/4). My portfolio seemed mostly organized, leaving revisions mostly including supressing output from several code blocks where the output is not needed; an egregious issue especially in deliverable 2. One suggestion that I believe is effective but could not be implemented on my own skill was refining the price distribution graph; prices could be sorted and grouped together instead of scattered on the X-axes, and the axes can be switched entirely. The Size and Ratings Relationship Graph could have also better illustrated my intended points.
+
+For reference, here are the updated deliverables: [Deliverable 1](https://anguyen62.github.io/DataScience/deliverable1.html) |
+[Deliverable 2](https://anguyen62.github.io/DataScience/deliverable2.html)
+
+# Data
+
+All data was processed to be as tidy as possible. A head of most of the data tables (that are not the initialized, pre-cleaned forms) are as shown:
+
+```{r}
+head(GameData)
+head(gameswithpurchases)
+head(cleaned_google_play_data)
+head(Ratings)
+head(testingset)
+head(trainingset)
+```
+
+
+# Addressing Model Results + Limitations
+
+As explained in deliverable 2, the model was not quite convincing or effective as I first theorized. This is even clear from a visual standpoint, as the resulting ggplot's parameters weren't scattered in a quite fluid manner as expected of a prediction graph. As for the question of whether age ratings have an effect on the overall ratings of apps, I believe that age rating as a lone factor is not a strong enough predictor for app performance. In essence:
+
+1. People who give ratings may be asked to do so in uncritical circumstances. For instance, if an app satisfies a user "well enough" at the moment of asking for a rating, the user may be driven to give the app a full rating and go about their business afterwards. Likewise, users feeling inconvenienced may leave a lower and inaccurate rating regardless of their actual use of the app at the time
+
+2. Some users may only take the time to review the app under extremely emotional circumstances. Those particularly opinionated or biased towards or against an app may leave extreme ratings such as 1s and 5s. This can be seen in several graphs where there are a significant number of 1 and 5-star ratings, leading to a skew towards overall ratings in the 4.0-4.5 range. 
+
+3. Current data may be limited in several places. Apple app store data, for example, mostly takes into account the rating for the recent version of the app rather than overall, though whether or not this is a more accurate way to determine user favorability is debatable. 
+
+# Operationalization
+
+Predicting factors that cause an app to be rated highly or lowly would point app developers in better directions regarding the production of their work. As observed above, singular factors, of course, don't account for the majority of how apps are percieved, but can help those concerned with performance take better steps forward. Factors such as the actual content or the brand image of the app (apps developed by Disney, for instance, would naturally get more attention) should also be taken into account.
+
+As such, I believe this would be an okay model to reference for app developers attempting to properly convey their work while taking into account the existence (or lack thereof) prices. It can be checked with other attempts to research the effects of certain variables on overall revenue, though my work currently lacks a direct analysis to actual revenue. As this is mainly a profit/research-based project, I do not forsee significant social impacts on the level of environmental changes. Rather, business tactics could change;  app developers may invest significant faith in in-app transactions, or perhaps keep a casualized environment where only participation and no additional transactions are involved.  
+
+
+# Unintended Consequences
+
+Several unintended but possible consequences of the study might arise in the form of content modification; specifically, several existing apps may change their approach or content entirely to suit the favorability of a more profitable audience. In other words, apps may attempt to adjust their rating (if possible) to create a more popular playership. This may go down a negative path, as the intended purpose of age ratings is to provide honest guidance on purchases and whether content may be disturbing for a particular group. Alternatively, many may view PEGI or MPAA ratings as having little value in this day and age, and condoning such acts may play a role in doing away with ratings entirely.
+
+# Explorations to Consider
+
+There is much more we can potentially study in terms of apps, ratings, and profitability. As my research boils down to mainly directly-scraped analytics, it would be ideal to also factor in actual reviews, the relative value of microtransactions in context to its own app (some players, for instance, may not spend as several transactions are simply not worth it objectively), target audiences besides ones categorized in Age ratings (the Gacha genre, for instance, is played mainly by Eastern audiences and has only touched the Western market), and more. 
